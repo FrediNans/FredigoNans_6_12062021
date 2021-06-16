@@ -2,6 +2,10 @@
  * @import Moongose shema Sauce
  */
 const Sauce = require("../models/sauces");
+
+/**
+ * @module fs to interact with the filesystem
+ */
 const fs = require("fs");
 
 /**
@@ -62,6 +66,13 @@ exports.addSauce = (request, response, next) => {
 		});
 };
 
+/**
+ * Modify the sauce object with the parameters of the request.
+ * If there is a change of image, import the new one and suppress the old one.
+ * @param {*} request
+ * @param {*} response
+ * @param {*} next
+ */
 exports.modifySauce = (request, response, next) => {
 	let sauceObject = request.body.sauce;
 
@@ -90,6 +101,12 @@ exports.modifySauce = (request, response, next) => {
 		.catch((error) => response.status(500).json({ error }));
 };
 
+/**
+ * Removes the sauce object as well as the stuck image.
+ * @param {*} request
+ * @param {*} response
+ * @param {*} next
+ */
 exports.deleteSauce = (request, response, next) => {
 	Sauce.findOne({ _id: request.params.id })
 		.then((sauce) => {
@@ -105,6 +122,12 @@ exports.deleteSauce = (request, response, next) => {
 		.catch((error) => response.status(500).json({ error }));
 };
 
+/**
+ * Manage likes and dislikes.
+ * @param {*} request
+ * @param {*} response
+ * @param {*} next
+ */
 exports.likesManagement = (request, response, next) => {
 	const likeOperator = request.body.like;
 	const userId = request.body.userId;

@@ -23,7 +23,7 @@ const saucesRoutes = require("./routes/sauces");
  */
 const limiter = rateLimit({
 	windowMs: 1 * 60 * 1000, // 1 minutes
-	max: 30,
+	max: 50,
 });
 /**
  * @access Connection to the database

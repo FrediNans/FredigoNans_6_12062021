@@ -1,3 +1,6 @@
+/**
+ * @module multer used to download imamage and generate unique name for each.
+ */
 const multer = require("multer");
 
 const MIME_TYPES = {
