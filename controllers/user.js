@@ -1,9 +1,11 @@
 /**
- * @module Bcrypt password utility
- * @module JsonWebToken tokken utility
+ * @module Encryption password utility
+ * @module TokenGenerator tokken utility
  */
-const bcrypt = require("bcrypt");
-const jsonWebToken = require("jsonwebtoken");
+require("dotenv").config();
+const tokenKey = process.env.TOKEN_KEY;
+const encryption = require(process.env.ENCRYPTION);
+const tokenGenerator = require(process.env.TOKEN_GENERATOR);
 
 /**
  * @import Moongose shema User
@@ -17,7 +19,7 @@ const User = require("../models/user");
  * @param {*} next
  */
 exports.signup = (request, response, next) => {
-	bcrypt
+	encryption
 		.hash(request.body.password, 10)
 		.then((hash) => {
 			const user = new User({
@@ -51,7 +53,7 @@ exports.login = (request, response, next) => {
 					error: "Email introuvable !",
 				});
 			}
-			bcrypt
+			encryption
 				.compare(request.body.password, user.password)
 				.then((valid) => {
 					if (!valid) {
@@ -61,11 +63,11 @@ exports.login = (request, response, next) => {
 					}
 					response.status(200).json({
 						userId: user._id,
-						token: jsonWebToken.sign(
+						token: tokenGenerator.sign(
 							{
 								userId: user.id,
 							},
-							"RANDOM_SECRET_KEY",
+							tokenKey,
 							{ expiresIn: "24h" }
 						),
 					});

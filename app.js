@@ -4,13 +4,15 @@
  * @module Mongoose Manages the Mongodb database
  * @module Path Utilities for working with file and directory paths
  */
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const path = require("path");
-const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
-const rateLimit = require("express-rate-limit");
+const expressSecure = require(process.env.EXPRESS_SECURE);
+const dataCleaner = require(process.env.DATA_CLEANER);
+const requestLimiter = require(process.env.REQUEST_LIMITER);
+const dbUrl = process.env.DB_URL;
 
 /**
  * @module Route Import routes
@@ -19,21 +21,21 @@ const userRoutes = require("./routes/user");
 const saucesRoutes = require("./routes/sauces");
 
 /**
- * limit each IP to 20 requests per minutes
+ * limit each IP to 20 requests per minute
  */
-const limiter = rateLimit({
-	windowMs: 1 * 60 * 1000, // 1 minutes
+const limiter = requestLimiter({
+	windowMs: 1 * 60 * 1000, // 1 minute
 	max: 50,
 });
 /**
  * @access Connection to the database
  */
 mongoose
-	.connect(
-		"mongodb+srv://Nans:@Azerty58@cluster0.otmvw.mongodb.net/test?retryWrites=true&w=majority",
-		{ useNewUrlParser: true, useUnifiedTopology: true }
-	)
-	.then(() => console.log("Connexion à MongoDB réussie !"))
+	.connect(`mongodb+srv://${dbUrl}`, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+	})
+	.then(() => console.log("Connexion à MongoDB réussi !"))
 	.catch(() => console.log("Connexion à MongoDB échouée !"));
 
 /**
@@ -61,8 +63,8 @@ app.use((request, response, next) => {
  *
  */
 app.use(bodyParser.json());
-app.use(helmet());
-app.use(mongoSanitize());
+app.use(expressSecure());
+app.use(dataCleaner());
 app.use(limiter);
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/api/auth", userRoutes);

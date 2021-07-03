@@ -75,9 +75,7 @@ exports.addSauce = (request, response, next) => {
  */
 exports.modifySauce = (request, response, next) => {
 	let sauceObject = request.body.sauce;
-
 	Sauce.findOne({ _id: request.params.id })
-
 		.then((sauce) => {
 			if (request.file) {
 				const filename = sauce.imageUrl.split("/images/")[1];
@@ -134,53 +132,32 @@ exports.likesManagement = (request, response, next) => {
 	const sauceId = request.params.id;
 	Sauce.findOne({ _id: sauceId })
 		.then((sauce) => {
-			const currentSauce = sauce;
-			if (likeOperator === 1) {
-				currentSauce.likes++;
-				currentSauce.usersLiked.push(userId);
-				Sauce.updateOne({ _id: sauceId }, currentSauce)
-					.then(() =>
-						response.status(200).json({ message: "Vous aimez cette sauce !" })
-					)
-					.catch((error) => response.status(400).json({ error }));
+			switch (likeOperator) {
+				case 1:
+					sauce.likes++;
+					sauce.usersLiked.push(userId);
+					break;
+				case -1:
+					sauce.dislikes++;
+					sauce.usersDisliked.push(userId);
+					break;
+				case 0:
+					const userLikesIndex = sauce.usersLiked.indexOf(userId);
+					const userDislikesIndex = sauce.usersDisliked.indexOf(userId);
+					if (userLikesIndex !== -1) {
+						sauce.likes--;
+						sauce.usersLiked.splice(userLikesIndex, 1);
+					} else {
+						sauce.dislikes--;
+						sauce.usersDisliked.splice(userDislikesIndex, 1);
+					}
+					break;
 			}
-			if (likeOperator === -1) {
-				currentSauce.dislikes++;
-				currentSauce.usersDisliked.push(userId);
-				Sauce.updateOne({ _id: sauceId }, currentSauce)
-					.then(() =>
-						response
-							.status(200)
-							.json({ message: "Vous n'aimez pas cette sauce !" })
-					)
-					.catch((error) => response.status(400).json({ error }));
-			}
-			if (likeOperator === 0) {
-				const userLikesIndex = sauce.usersLiked.indexOf(userId);
-				const userDislikesIndex = sauce.usersDisliked.indexOf(userId);
-				if (userLikesIndex !== -1) {
-					currentSauce.likes--;
-					currentSauce.usersLiked.splice(userLikesIndex, 1);
-					Sauce.updateOne({ _id: sauceId }, currentSauce)
-						.then(() =>
-							response
-								.status(200)
-								.json({ message: "Vous avez retiré votre avis !" })
-						)
-						.catch((error) => response.status(400).json({ error }));
-				}
-				if (userDislikesIndex !== -1) {
-					currentSauce.dislikes--;
-					currentSauce.usersDisliked.splice(userLikesIndex, 1);
-					Sauce.updateOne({ _id: sauceId }, currentSauce)
-						.then(() =>
-							response
-								.status(200)
-								.json({ message: "Vous avez retiré votre avis !" })
-						)
-						.catch((error) => response.status(400).json({ error }));
-				}
-			}
+			Sauce.updateOne({ _id: sauceId }, sauce)
+				.then(() =>
+					response.status(200).json({ message: "Votre avis est enregistré !" })
+				)
+				.catch((error) => response.status(400).json({ error }));
 		})
 		.catch((error) => response.status(400).json({ error }));
 };

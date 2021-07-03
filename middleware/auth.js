@@ -1,8 +1,9 @@
 /**
- * @module JsonWebToken tokken utility
+ * @module TokenGenerator tokken utility
  */
-const jwt = require("jsonwebtoken");
-
+require("dotenv").config();
+const tokenGenerator = require(process.env.TOKEN_GENERATOR);
+const tokenKey = process.env.TOKEN_KEY;
 /**
  * @module
  * Get the tokken in header of request and extract the id.
@@ -15,7 +16,7 @@ const jwt = require("jsonwebtoken");
 module.exports = (request, response, next) => {
 	try {
 		const token = request.headers.authorization.split(" ")[1];
-		const decodedToken = jwt.verify(token, "RANDOM_SECRET_KEY");
+		const decodedToken = tokenGenerator.verify(token, tokenKey);
 		const userId = decodedToken.userId;
 		if (request.body.userId && request.body.userId !== userId) {
 			throw "Invalid user ID";
